@@ -3,24 +3,28 @@ class Rollout
     @redis = redis
   end
 
-  def activate(feature, object)
-    @redis.sadd(key(feature), "#{object.class.name}-#{object.id}")
+  def activate(feature, object = nil)
+    @redis.sadd(key(feature), val(object))
   end
 
-  def deactivate(feature, object)
-    @redis.srem(key(feature), "#{object.class.name}-#{object.id}")
+  def deactivate(feature, object = nil)
+    @redis.srem(key(feature), val(object))
   end
 
-  def active?(feature, object)
-     @redis.sismember(key(feature), "#{object.class.name}-#{object.id}")
+  def active?(feature, object = nil)
+     @redis.sismember(key(feature), val(object))
   end
   
-  def inactive?(feature, object)
+  def inactive?(feature, object = nil)
     !active?(feature, object)
   end
 
   private
     def key(name)
       "rollout-feature:#{name}"
+    end
+
+    def val(object)
+      object.nil? ? "APP" : "#{object.class.name}-#{object.id}"
     end
 end
